@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="orbit-token" content="__ORBIT_TOKEN__">
+<meta name="orbit-lang" content="__ORBIT_LANG__">
+<title>Trạm Orbit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='5' fill='%2346e3ff'/%3E%3Cellipse cx='16' cy='16' rx='14' ry='6' fill='none' stroke='%23ffd36e' stroke-width='2' transform='rotate(-25 16 16)'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div id="stage"></div>
+<div class="vignette"></div>
+
+<header class="topbar">
+  <div class="brand panel">
+    <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+      <defs><radialGradient id="lg" cx="40%" cy="35%"><stop offset="0" stop-color="#bff4ff"/><stop offset="1" stop-color="#1c7dd6"/></radialGradient></defs>
+      <circle cx="20" cy="20" r="8" fill="url(#lg)"/>
+      <ellipse cx="20" cy="20" rx="17" ry="7" fill="none" stroke="#ffd36e" stroke-width="1.8" transform="rotate(-24 20 20)"/>
+      <circle cx="35" cy="13" r="2.4" fill="#ffd36e"/>
+    </svg>
+    <div>
+      <div class="brand-title" id="title">TRẠM ORBIT</div>
+      <div class="brand-sub" id="subtitle">Đội Claude Code · quỹ đạo trực tiếp</div>
+    </div>
+    <span class="demo-chip" id="demoChip" hidden data-i18n="brand.demo">TRÌNH DIỄN</span>
+  </div>
+
+  <div class="stats panel" id="stats">
+    <button class="stat" data-k="working"><i></i><b>0</b><span data-i18n="status.working">Đang làm</span></button>
+    <button class="stat" data-k="ask"><i></i><b>0</b><span data-i18n="status.ask">Cần bạn</span></button>
+    <button class="stat" data-k="done"><i></i><b>0</b><span data-i18n="status.done">Chờ lệnh</span></button>
+    <button class="stat" data-k="idle"><i></i><b>0</b><span data-i18n="status.idle">Ngủ đông</span></button>
+  </div>
+
+  <div class="telemetry panel">
+    <div class="tm">
+      <span class="tm-k" data-i18n="tm.tokens">Token hôm nay</span>
+      <span class="tm-v mono" id="tokToday">0</span>
+    </div>
+    <div class="tm">
+      <span class="tm-k" data-i18n="tm.cost">Chi phí ước tính</span>
+      <span class="tm-v mono"><span id="costToday">$0</span><small id="budget"> / $50</small></span>
+      <span class="bar"><span id="budgetBar"></span></span>
+    </div>
+    <button class="tm bgstat" id="bgStat" data-i18n-title="tm.bgTitle">
+      <span class="tm-k" data-i18n="tm.bg">Lệnh nền</span>
+      <span class="tm-v mono">⌁ <span id="bgCount">0</span></span>
+    </button>
+    <div class="tm clock">
+      <span class="tm-k" id="dateLine">—</span>
+      <span class="tm-v mono" id="clock">--:--:--</span>
+    </div>
+  </div>
+</header>
+
+<div class="alert" id="alert" hidden></div>
+
+<button class="paneltab left" id="crewTab" hidden data-i18n-title="crew.tab"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg><span data-i18n="crew.title">Phi hành đoàn</span><b id="crewTabN">0</b><em id="crewTabAsk" hidden></em></button>
+<button class="paneltab right" id="sideTab" hidden data-i18n-title="comms.tab"><em id="sideTabAsk" hidden></em><b id="sideTabN"></b><span id="sideTabLabel">Liên lạc</span><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+<aside class="panel crew" id="crewPanel">
+  <div class="ph">
+    <span class="ph-title" data-i18n="crew.title">Phi hành đoàn</span>
+    <span class="ph-meta" id="crewMeta">0 phiên</span>
+    <button class="minbtn" data-min="crew" data-i18n-title="panel.minCrew" aria-label="Thu nhỏ"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="crew-list" id="crewList"></div>
+  <div class="hooks" id="hooksBox"></div>
+</aside>
+
+<aside class="panel side" id="sidePanel">
+  <div class="view" id="commsView">
+    <div class="ph">
+      <span class="ph-title" data-i18n="comms.title">Liên lạc</span>
+      <span class="ph-meta" data-i18n="comms.meta">tín hiệu 24 giờ</span>
+      <button class="minbtn" data-min="side" data-i18n-title="panel.minSide" aria-label="Thu nhỏ"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="comms" id="comms"></div>
+  </div>
+  <div class="view" id="detailView" hidden></div>
+</aside>
+
+<div class="empty panel" id="empty" hidden>
+  <div class="empty-orb"></div>
+  <h2 data-i18n="empty.title">Trạm đang chờ phi hành đoàn</h2>
+  <p data-i18n-html="empty.body">Mở <b>Claude Code</b> trong một dự án — robot sẽ cập bến trong vài giây.</p>
+  <p class="muted" id="emptyScope"></p>
+  <p class="muted" data-i18n-html="empty.demo">Muốn xem thử: dừng trạm rồi chạy <code>npm run demo</code>.</p>
+</div>
+
+<footer class="dock">
+  <button class="dock-btn new" id="btnNew" hidden data-i18n-title="dock.newTip">
+    <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="dock.new">Phiên mới</span>
+  </button>
+  <button class="dock-btn" id="btnStats" hidden data-i18n-title="dock.statsTip">
+    <svg viewBox="0 0 24 24"><path d="M5 20V11M12 20V4M19 20v-6"/></svg><span data-i18n="dock.stats">Thống kê</span>
+  </button>
+  <button class="dock-btn" id="btnOverview" data-i18n-title="dock.overviewTip">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><ellipse cx="12" cy="12" rx="10" ry="4.5"/></svg><span data-i18n="dock.overview">Toàn cảnh</span>
+  </button>
+  <button class="dock-btn on" id="btnRotate" data-i18n-title="dock.rotateTip">
+    <svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-3-6.2"/><path d="M20 4v5h-5"/></svg><span data-i18n="dock.rotate">Tự xoay</span>
+  </button>
+  <button class="dock-btn on" id="btnQuality" data-i18n-title="dock.fxTip">
+    <svg viewBox="0 0 24 24"><path d="M12 3l2.5 5.5L20 11l-5.5 2.5L12 19l-2.5-5.5L4 11l5.5-2.5z"/></svg><span data-i18n="dock.fx">Hiệu ứng</span>
+  </button>
+  <button class="dock-btn" id="btnPanels" data-i18n-title="dock.panelsTip">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M9 5v14M15 5v14"/></svg><span data-i18n="dock.panels">Bảng</span>
+  </button>
+  <button class="dock-btn lang" id="btnLang" data-i18n-title="dock.lang"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/></svg><span id="langLabel">VI</span></button>
+  <span class="dock-hint" data-i18n="dock.hint">Kéo để xoay · cuộn để phóng to · bấm vào robot để xem chi tiết</span>
+</footer>
+
+<div class="reader" id="reader" hidden>
+  <div class="reader-box panel" role="dialog" aria-modal="true" aria-labelledby="readerTitle">
+    <header class="reader-h">
+      <div><div class="reader-title" id="readerTitle"></div><div class="reader-meta" id="readerMeta"></div></div>
+      <button class="dock-btn" id="readerRaw" data-i18n-title="reader.rawTip">Thô</button>
+      <button class="dock-btn" id="readerCopy" data-i18n="reader.copy">Sao chép</button>
+      <button class="x" id="readerClose" data-i18n-title="close">✕</button>
+    </header>
+    <article class="md" id="readerBody"></article>
+  </div>
+</div>
+
+<div class="reader" id="monthBox" hidden>
+  <div class="reader-box month-box panel" role="dialog" aria-modal="true" aria-labelledby="moTitle">
+    <header class="reader-h">
+      <div><div class="reader-title" id="moTitle" data-i18n="mo.title">Thống kê sử dụng</div><div class="reader-meta" id="moMeta"></div></div>
+      <div class="mo-tabs" id="moTabs">
+        <button class="dock-btn" data-range="30" data-i18n="mo.r30">30 ngày qua</button>
+        <button class="dock-btn" data-range="month" data-i18n="mo.rmonth">Tháng này</button>
+      </div>
+      <button class="x" id="moClose" data-i18n-title="close">✕</button>
+    </header>
+    <div class="mo-body" id="moBody"></div>
+  </div>
+</div>
+
+<div class="reader" id="launcher" hidden>
+  <form class="reader-box launcher-box panel" id="lcForm" role="dialog" aria-modal="true" aria-labelledby="lcTitle">
+    <header class="reader-h">
+      <div class="reader-title" id="lcTitle" data-i18n="lc.title">Mở phiên Claude Code mới</div>
+      <button class="x" type="button" id="lcClose" data-i18n-title="close">✕</button>
+    </header>
+    <div class="lc-body">
+      <label class="lc-l" for="lcDir" data-i18n="lc.dir">Thư mục dự án</label>
+      <input id="lcDir" class="lc-in mono" type="text" autocomplete="off" spellcheck="false" data-i18n-ph="lc.dirPh">
+      <div class="lc-recent" id="lcRecent"></div>
+
+      <div class="lc-l" data-i18n="lc.mode">Cách mở</div>
+      <div class="lc-modes">
+        <label class="lc-mode"><input type="radio" name="lcMode" value="terminal" checked><span><b data-i18n="lc.terminal">Cửa sổ Terminal</b><small data-i18n="lc.terminalTip"></small></span></label>
+        <label class="lc-mode"><input type="radio" name="lcMode" value="desktop"><span><b data-i18n="lc.desktop">App Claude desktop</b><small data-i18n="lc.desktopTip"></small></span></label>
+        <label class="lc-mode"><input type="radio" name="lcMode" value="bg"><span><b data-i18n="lc.bg">Chạy nền</b><small data-i18n="lc.bgTip"></small></span></label>
+      </div>
+
+      <label class="lc-l" for="lcPrompt"><span data-i18n="lc.prompt">Lệnh đầu tiên</span> <em id="lcPromptNote"></em></label>
+      <textarea id="lcPrompt" class="lc-in" rows="4" maxlength="4000" data-i18n-ph="lc.promptPh"></textarea>
+    </div>
+    <footer class="lc-foot">
+      <div class="lc-msg"><div class="err" id="lcErr" hidden></div><div class="ok" id="lcOk" hidden></div></div>
+      <button class="send ghost" type="button" id="lcCancel" data-i18n="lc.cancel">Hủy</button>
+      <button class="send" type="submit" id="lcSubmit"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span data-i18n="lc.open">Mở phiên</span></button>
+    </footer>
+  </form>
+</div>
+
+<div class="stale" id="stale" hidden data-i18n-html="stale"></div>
+<div class="conn" id="conn" hidden data-i18n="conn.lost">Mất kết nối với trạm — đang thử lại…</div>
+
+<script type="module" src="/js/main.js"></script>
+</body>
+</html>

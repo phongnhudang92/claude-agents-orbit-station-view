@@ -1,0 +1,19 @@
+{
+  "name": "claude-agents-orbit-station-view",
+  "version": "1.0.0",
+  "description": "A 3D space-station dashboard for your local Claude Code sessions: every session is a robot, subagents are drones, and you can dispatch orders to them through hooks. Runs locally, zero dependencies.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node server.js --demo",
+    "test": "node --test lib/*.test.js",
+    "hooks:install": "node scripts/hooks.js install",
+    "hooks:uninstall": "node scripts/hooks.js uninstall",
+    "hooks:status": "node scripts/hooks.js status",
+    "mcp:install": "node scripts/mcp-install.js"
+  },
+  "engines": { "node": ">=18" },
+  "keywords": ["claude-code", "claude", "ai-agents", "dashboard", "threejs", "hooks", "mcp", "monitoring"],
+  "author": "Peter",
+  "license": "MIT"
+}
